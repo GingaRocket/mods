@@ -63,10 +63,14 @@
       <StaleSplitAssembly Include="$(DeploymentDirectory)\GtaCollectiblesMap.Game.dll" />
       <ScriptFile Include="$(TargetPath)" />
       <ScriptFile Include="$(TargetDir)GtaCollectiblesMap.ini" />
+      <ReleaseDocument Include="$(MSBuildThisFileDirectory)..\..\README.md" />
+      <ReleaseDocument Include="$(MSBuildThisFileDirectory)..\..\LICENSE" />
     </ItemGroup>
     <MakeDir Directories="$(DeploymentDirectory);$(DeploymentDirectory)\scripts" />
     <Delete Files="@(StaleSplitAssembly)" />
     <Copy SourceFiles="@(ScriptFile)" DestinationFolder="$(DeploymentDirectory)\scripts"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(ReleaseDocument)" DestinationFolder="$(DeploymentDirectory)\.."
           SkipUnchangedFiles="true" />
   </Target>
 

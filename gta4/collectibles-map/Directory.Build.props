@@ -8,12 +8,13 @@
     <WarningsAsErrors>nullable</WarningsAsErrors>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Deterministic>true</Deterministic>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/festelo/mods</RepositoryUrl>
 
     <!-- ScriptHookDotNet is a mixed-mode assembly installed with the game. The environment
-         variable/property keeps the repository portable; the final condition is only a
-         convenience for this machine's known Complete Edition installation. -->
+         variable/property keeps the repository portable. -->
     <GtaIvDirectory Condition="'$(GtaIvDirectory)' == '' and '$(GTAIV_DIR)' != ''">$(GTAIV_DIR)</GtaIvDirectory>
-    <GtaIvDirectory Condition="'$(GtaIvDirectory)' == '' and Exists('B:\Apps\Steam\steamapps\common\Grand Theft Auto IV\GTAIV\ScriptHookDotNet.asi')">B:\Apps\Steam\steamapps\common\Grand Theft Auto IV\GTAIV</GtaIvDirectory>
     <ScriptHookDotNetAssembly Condition="'$(ScriptHookDotNetAssembly)' == '' and '$(GtaIvDirectory)' != ''">$(GtaIvDirectory)\ScriptHookDotNet.asi</ScriptHookDotNetAssembly>
   </PropertyGroup>
 </Project>

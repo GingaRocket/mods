@@ -6,9 +6,10 @@ collected directly on the in-game pause map and radar, live and without a save-f
 It covers **GTA IV**, **The Lost and Damned**, and **The Ballad of Gay Tony**. The episodes'
 seagulls replace pigeons automatically based on the running episode.
 
-> **Runtime status:** validated in-game on Complete Edition 1.2.0.59. Both memory locators,
-> pause-map markers, proximity-filtered minimap markers, category names, and faded `ShowAll`
-> markers have been exercised successfully.
+> **Runtime status:** GTA IV has been validated end to end on Complete Edition 1.2.0.59,
+> including both memory locators, pause-map and proximity-filtered radar markers, names,
+> `ShowAll`, cleanup across save loads, and taxi exclusion. TLAD and TBoGT support is
+> implemented but has not yet received the same end-to-end in-game validation.
 
 ## How it works
 
@@ -53,10 +54,11 @@ GTAIV/
     `-- GtaCollectiblesMap.ini
 ```
 
-Every build stages exactly this tree under `artifacts/<Configuration>/GTAIV`; copy the contents
-of that `GTAIV` directory over the real game directory. If upgrading from an older split build,
-remove `GtaCollectiblesMap.Core.dll`, `GtaCollectiblesMap.Features.dll`, and
-`GtaCollectiblesMap.Game.dll` from the game root; the combined script does not use them.
+Every build stages this tree under `artifacts/<Configuration>/GTAIV`, with `README.md` and
+`LICENSE` beside it. Copy the contents of the `GTAIV` directory over the real game directory.
+If upgrading from an older split build, remove `GtaCollectiblesMap.Core.dll`,
+`GtaCollectiblesMap.Features.dll`, and `GtaCollectiblesMap.Game.dll` from the game root; the
+combined script does not use them.
 
 Do not copy or rename `ScriptHookDotNet.asi`; use the copy installed at the game root. The
 build references it for compilation but deliberately does not emit another copy.
@@ -93,12 +95,12 @@ Complete Edition directory containing `ScriptHookDotNet.asi`, or pass the equiva
 property:
 
 ```powershell
-dotnet build GtaCollectiblesMap.slnx -p:GtaIvDirectory="B:\Apps\Steam\steamapps\common\Grand Theft Auto IV\GTAIV"
+dotnet build GtaCollectiblesMap.slnx -c Release -p:GtaIvDirectory="C:\Games\Grand Theft Auto IV\GTAIV"
 dotnet test GtaCollectiblesMap.slnx
 ```
 
-The known installation above is detected automatically on this machine. The runtime is .NET
-Framework 4.8, with C# 13 enabled by `LangVersion` and
+Alternatively, set `GTAIV_DIR` to avoid passing the property on every build. The runtime is
+.NET Framework 4.8, with C# 13 enabled by `LangVersion` and
 [PolySharp](https://github.com/Sergio0694/PolySharp). PolySharp is analyzer-only and adds no
 runtime DLL. Projects touching ScriptHookDotNet target **x86** because GTA IV and the mixed-mode
 ASI are 32-bit.
