@@ -75,6 +75,12 @@ collected everything.
 - **ShowAll:** already-collected items are faded and smaller, with an option to put them on the
   radar too.
 
+Collectibles normally use rounded markers. While entering a vehicle or riding as a taxi
+passenger, they temporarily use objective variants that the stock taxi scripts omit from their
+destination list. The larger objective artwork is rendered at 55% of the configured marker
+scale to match the rounded markers' visual footprint. Afterward, the rounded sprites and exact
+configured scale are restored; names, colours, map visibility, and tracked handles stay intact.
+
 GTA IV uses a fixed 20-colour blip palette rather than RGB. The panel excludes colours already
 claimed by missions, waypoints, enemies and gangs. Blue is also excluded because the game
 forces a blue blip's hover text to `Friend`. Defaults are **Teal** for birds and **DarkOrange**

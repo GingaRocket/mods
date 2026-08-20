@@ -15,6 +15,7 @@ public sealed class CollectiblesScript : Script
 {
     private readonly ModHost _host;
     private readonly RadarMarkerRenderer _renderer;
+    private readonly TaxiRideDetector _taxiRideDetector;
     private readonly IGameContext _context;
     private readonly ILog _log;
     private bool _shutDown;
@@ -35,6 +36,7 @@ public sealed class CollectiblesScript : Script
         // constructed seconds before the world exists, so there would be nothing to find yet.
         RadarMarkerRenderer renderer = new(log);
         _renderer = renderer;
+        _taxiRideDetector = new TaxiRideDetector(log);
         _context = context;
         _log = log;
 
@@ -61,6 +63,7 @@ public sealed class CollectiblesScript : Script
     private void OnTick(object sender, EventArgs e)
     {
         SweepOnce();
+        _renderer.SetTaxiSafeIcons(_taxiRideDetector.ShouldUseTaxiSafeIcons());
         _host.Tick();
         ReportOwnMarkersOnce();
         _host.RenderUi();
@@ -105,10 +108,9 @@ public sealed class CollectiblesScript : Script
 
         _swept = true;
 
-        // The census only reads. The sweep is NOT called: it identifies blips by sprite alone,
-        // and GTA IV uses the same destination sprites for its own friend and activity blips —
-        // it cannot distinguish this mod's remnants from game-owned markers. Nothing may
-        // delete a blip this mod did not create and is not still tracking.
+        // The census only reads. A sprite match cannot distinguish this mod's remnants from
+        // game-owned objective markers. Nothing may delete a blip this mod did not create and
+        // is not still tracking.
         _renderer.LogBlipCensus();
     }
 
