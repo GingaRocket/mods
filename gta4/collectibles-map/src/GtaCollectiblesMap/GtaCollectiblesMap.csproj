@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- ScriptHookDotNet discovers managed scripts by the .net.dll suffix. -->
+    <AssemblyName>GtaCollectiblesMap.net</AssemblyName>
+    <RootNamespace>GtaCollectiblesMap</RootNamespace>
+    <!-- GTA IV and ScriptHookDotNet are 32-bit. -->
+    <PlatformTarget>x86</PlatformTarget>
+    <DeploymentDirectory>$(MSBuildThisFileDirectory)..\..\artifacts\$(Configuration)\GTAIV</DeploymentDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ScriptHookDotNet's key and forms APIs use WinForms/Drawing types. -->
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+
+  <!--
+    The layer projects remain independently compiled and referenced by tests, preserving their
+    architecture boundaries. The deployable script compiles the same sources directly so its
+    runtime closure is one assembly; this is source-level static linking with no merger tool or
+    additional loader involved.
+  -->
+  <ItemGroup>
+    <Compile Include="..\GtaCollectiblesMap.Core\**\*.cs"
+             Exclude="..\GtaCollectiblesMap.Core\bin\**;..\GtaCollectiblesMap.Core\obj\**"
+             Link="Core\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\GtaCollectiblesMap.Features\**\*.cs"
+             Exclude="..\GtaCollectiblesMap.Features\bin\**;..\GtaCollectiblesMap.Features\obj\**"
+             Link="Features\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\GtaCollectiblesMap.Game\**\*.cs"
+             Exclude="..\GtaCollectiblesMap.Game\bin\**;..\GtaCollectiblesMap.Game\obj\**"
+             Link="Game\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ScriptHookDotNet">
+      <HintPath>$(ScriptHookDotNetAssembly)</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <PackageReference Include="PolySharp" Version="1.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\GtaCollectiblesMap.ini" Link="GtaCollectiblesMap.ini"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="RequireScriptHookDotNet" BeforeTargets="ResolveReferences"
+          Condition="!Exists('$(ScriptHookDotNetAssembly)')">
+    <Error Text="ScriptHookDotNet.asi was not found. Set GTAIV_DIR or pass /p:GtaIvDirectory=the GTAIV folder." />
+  </Target>
+
+  <!-- Stage the single self-contained mod assembly. Remove artifacts from the former split
+       deployment so an incremental build cannot accidentally produce a misleading package. -->
+  <Target Name="StageMod" AfterTargets="Build">
+    <ItemGroup>
+      <StaleSplitAssembly Include="$(DeploymentDirectory)\GtaCollectiblesMap.Core.dll" />
+      <StaleSplitAssembly Include="$(DeploymentDirectory)\GtaCollectiblesMap.Features.dll" />
+      <StaleSplitAssembly Include="$(DeploymentDirectory)\GtaCollectiblesMap.Game.dll" />
+      <ScriptFile Include="$(TargetPath)" />
+      <ScriptFile Include="$(TargetDir)GtaCollectiblesMap.ini" />
+    </ItemGroup>
+    <MakeDir Directories="$(DeploymentDirectory);$(DeploymentDirectory)\scripts" />
+    <Delete Files="@(StaleSplitAssembly)" />
+    <Copy SourceFiles="@(ScriptFile)" DestinationFolder="$(DeploymentDirectory)\scripts"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

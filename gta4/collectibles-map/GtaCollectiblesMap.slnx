@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GtaCollectiblesMap.Core/GtaCollectiblesMap.Core.csproj" />
+    <Project Path="src/GtaCollectiblesMap.Features/GtaCollectiblesMap.Features.csproj" />
+    <Project Path="src/GtaCollectiblesMap.Game/GtaCollectiblesMap.Game.csproj" />
+    <Project Path="src/GtaCollectiblesMap/GtaCollectiblesMap.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GtaCollectiblesMap.Core.Tests/GtaCollectiblesMap.Core.Tests.csproj" />
+    <Project Path="tests/GtaCollectiblesMap.Features.Tests/GtaCollectiblesMap.Features.Tests.csproj" />
+  </Folder>
+</Solution>

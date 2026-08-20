@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>13.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors>nullable</WarningsAsErrors>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Deterministic>true</Deterministic>
+
+    <!-- ScriptHookDotNet is a mixed-mode assembly installed with the game. The environment
+         variable/property keeps the repository portable; the final condition is only a
+         convenience for this machine's known Complete Edition installation. -->
+    <GtaIvDirectory Condition="'$(GtaIvDirectory)' == '' and '$(GTAIV_DIR)' != ''">$(GTAIV_DIR)</GtaIvDirectory>
+    <GtaIvDirectory Condition="'$(GtaIvDirectory)' == '' and Exists('B:\Apps\Steam\steamapps\common\Grand Theft Auto IV\GTAIV\ScriptHookDotNet.asi')">B:\Apps\Steam\steamapps\common\Grand Theft Auto IV\GTAIV</GtaIvDirectory>
+    <ScriptHookDotNetAssembly Condition="'$(ScriptHookDotNetAssembly)' == '' and '$(GtaIvDirectory)' != ''">$(GtaIvDirectory)\ScriptHookDotNet.asi</ScriptHookDotNetAssembly>
+  </PropertyGroup>
+</Project>

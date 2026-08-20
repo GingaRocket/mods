@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Core deliberately has NO reference to ScriptHookDotNet or any other game SDK.
+    That absence is the architectural boundary: game types are not in scope here,
+    so domain logic cannot reach for them, and this assembly stays unit-testable
+    without GTA IV installed. Do not add a game reference to this project.
+  -->
+
+  <ItemGroup>
+    <PackageReference Include="PolySharp" Version="1.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

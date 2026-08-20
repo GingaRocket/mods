@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The only library project that references ScriptHookDotNet. Everything game-specific - pools, blips,
+    natives, raw memory - is confined here and exposed to the rest of the mod through the
+    Core abstractions.
+  -->
+
+  <PropertyGroup>
+    <!-- GTA IV is a 32-bit process and ScriptHookDotNet is a 32-bit mixed-mode
+         assembly, so this cannot be AnyCPU. -->
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GtaCollectiblesMap.Core\GtaCollectiblesMap.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Provided by the game's working ScriptHookDotNet installation. It must not be copied
+         beside the mod: the ASI loader owns the in-process assembly. -->
+    <Reference Include="ScriptHookDotNet">
+      <HintPath>$(ScriptHookDotNetAssembly)</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <PackageReference Include="PolySharp" Version="1.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <Target Name="RequireScriptHookDotNet" BeforeTargets="ResolveReferences"
+          Condition="!Exists('$(ScriptHookDotNetAssembly)')">
+    <Error Text="ScriptHookDotNet.asi was not found. Set GTAIV_DIR or pass /p:GtaIvDirectory=the GTAIV folder." />
+  </Target>
+
+</Project>

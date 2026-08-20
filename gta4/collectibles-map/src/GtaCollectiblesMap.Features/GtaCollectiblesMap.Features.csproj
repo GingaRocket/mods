@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Orchestration only. References Core, never the Game layer, so feature behaviour can be
+    exercised against fake sources and a fake renderer with no game installed.
+  -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\GtaCollectiblesMap.Core\GtaCollectiblesMap.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PolySharp" Version="1.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
