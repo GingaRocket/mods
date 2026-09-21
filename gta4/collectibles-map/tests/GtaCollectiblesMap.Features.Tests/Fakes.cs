@@ -52,6 +52,13 @@ internal sealed class FakeRenderer : IMarkerRenderer
         Markers.Clear();
         Operations.Add("removeAll");
     }
+
+    public void SweepNamelessOrphans(
+        CollectibleCategory category,
+        IReadOnlyList<Vec3> collectedPositions)
+    {
+        Operations.Add($"sweep:{category}:{collectedPositions.Count}");
+    }
 }
 
 internal sealed class FakeGameContext : IGameContext

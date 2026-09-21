@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using GtaCollectiblesMap.Core.Model;
 
 namespace GtaCollectiblesMap.Core.Abstractions;
@@ -19,6 +20,15 @@ public interface IMarkerRenderer
     /// reload — orphaned blips survive the script and litter the map permanently.
     /// </summary>
     void RemoveAll();
+
+    /// <summary>
+    /// Deletes leftover destination-2 blips at collected stunt-jump positions that this
+    /// renderer is not tracking (empty hover name). Complete Edition can keep those after
+    /// a failed delete.
+    /// </summary>
+    void SweepNamelessOrphans(
+        CollectibleCategory category,
+        IReadOnlyList<Vec3> collectedPositions);
 
     int ActiveCount { get; }
 }

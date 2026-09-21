@@ -304,7 +304,8 @@ public sealed class RadarMarkerRenderer(ILog log) : IMarkerRenderer
         // a handle forever, and a stale entry would block a later Add for the same key.
         _markers.Remove(key);
 
-        if (Classify(marker) == Ownership.Foreign)
+        Ownership ownership = Classify(marker);
+        if (ownership == Ownership.Foreign)
         {
             // A live blip somewhere other than where we put ours: the slot has been reused.
             // Deleting it would destroy a ped or vehicle blip that was never ours to remove.
@@ -331,11 +332,108 @@ public sealed class RadarMarkerRenderer(ILog log) : IMarkerRenderer
         try
         {
             marker.Blip.Delete();
+            CompleteEditionBlipInterop.RemoveBlip(marker.Blip);
         }
         catch (Exception ex)
         {
             log.Error($"removing blip for {key} failed: {ex.Message}");
         }
+    }
+
+    public void SweepNamelessOrphans(
+        CollectibleCategory category,
+        IReadOnlyList<Vec3> collectedPositions)
+    {
+        if (category != CollectibleCategory.StuntJump || collectedPositions.Count == 0)
+        {
+            return;
+        }
+
+        const float radiusSquared = 10000f;
+
+        foreach (BlipType type in BlipTypes)
+        {
+            Blip[]? blips;
+            try
+            {
+                blips = Blip.GetAllBlipsOfType(type);
+            }
+            catch
+            {
+                continue;
+            }
+
+            if (blips is null)
+            {
+                continue;
+            }
+
+            foreach (Blip blip in blips)
+            {
+                try
+                {
+                    if (!blip.Exists())
+                    {
+                        continue;
+                    }
+
+                    if (Probe(() => blip.Icon.ToString()) != nameof(BlipIcon.Misc_Destination2))
+                    {
+                        continue;
+                    }
+
+                    Vec3 pos = blip.Position.ToVec3();
+                    if (IsTrackedAt(pos) || !IsNearCollected(pos, collectedPositions, radiusSquared))
+                    {
+                        continue;
+                    }
+
+                    CompleteEditionBlipInterop.SetDisplay(blip, MarkerDisplay.Hidden);
+                    CompleteEditionBlipInterop.RemoveBlip(blip);
+                    try
+                    {
+                        blip.Delete();
+                    }
+                    catch
+                    {
+                        // Native REMOVE_BLIP already ran.
+                    }
+                }
+                catch
+                {
+                    // Best effort; a live taxi blip must not abort the rest of the sweep.
+                }
+            }
+        }
+    }
+
+    private bool IsTrackedAt(Vec3 position)
+    {
+        foreach (Marker marker in _markers.Values)
+        {
+            if (position.DistanceSquaredTo(marker.State.Position) <= OwnershipEpsilonSquared)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsNearCollected(
+        Vec3 position,
+        IReadOnlyList<Vec3> collectedPositions,
+        float radiusSquared)
+    {
+        foreach (Vec3 collected in collectedPositions)
+        {
+            if (position.DistanceSquaredTo(collected) <= radiusSquared)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void RemoveAll()

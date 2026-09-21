@@ -29,12 +29,21 @@ internal static class CompleteEditionBlipInterop
 
     public static void SetDisplay(Blip blip, MarkerDisplay display)
     {
-        blip.Display = display switch
+        // ScriptHookDotNet's Hidden enum is not 0 on Complete Edition. Writing it leaves
+        // the last value in place — MapOnly (3) — so the blip vanishes from radar and
+        // stays on the pause map.
+        int value = display switch
         {
-            MarkerDisplay.MapOnly => (BlipDisplay)MapOnlyDisplay,
-            MarkerDisplay.MapAndRadar => (BlipDisplay)MapAndRadarDisplay,
-            _ => BlipDisplay.Hidden,
+            MarkerDisplay.MapOnly => MapOnlyDisplay,
+            MarkerDisplay.MapAndRadar => MapAndRadarDisplay,
+            _ => 0,
         };
+        GTA.Native.Function.Call("CHANGE_BLIP_DISPLAY", blip, value);
+    }
+
+    public static void RemoveBlip(Blip blip)
+    {
+        GTA.Native.Function.Call("REMOVE_BLIP", blip);
     }
 
     public static void SetName(Blip blip, string name)
