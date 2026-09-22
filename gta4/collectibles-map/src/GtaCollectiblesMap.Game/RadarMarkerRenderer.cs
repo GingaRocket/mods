@@ -335,8 +335,9 @@ public sealed class RadarMarkerRenderer(ILog log) : IMarkerRenderer
 
         try
         {
+            // ScriptHookDotNet's Delete already calls REMOVE_BLIP and clears the handle. A
+            // second native remove on a now-gone blip crashes Complete Edition.
             marker.Blip.Delete();
-            CompleteEditionBlipInterop.RemoveBlip(marker.Blip);
         }
         catch (Exception ex)
         {
@@ -389,7 +390,8 @@ public sealed class RadarMarkerRenderer(ILog log) : IMarkerRenderer
                 continue;
             }
 
-            if (Classify(marker) != Ownership.Ours)
+            Ownership ownership = Classify(marker);
+            if (ownership != Ownership.Ours)
             {
                 // Follow the same recovery rule as Update: never write through a recycled
                 // handle. Forget it and create a fresh marker in the requested icon mode.
@@ -443,9 +445,10 @@ public sealed class RadarMarkerRenderer(ILog log) : IMarkerRenderer
 
     private static void ApplyScale(Blip blip, float configuredScale, bool taxiSafe)
     {
-        blip.Scale = taxiSafe
+        float scale = taxiSafe
             ? configuredScale * TaxiSafeScaleMultiplier
             : configuredScale;
+        blip.Scale = scale;
     }
 
     /// <summary>Pushes alpha only when it actually has to change.</summary>
@@ -572,7 +575,7 @@ public sealed class RadarMarkerRenderer(ILog log) : IMarkerRenderer
         // drawing an indicator. Destination variants 1 and 2 give the normal rounded artwork,
         // but GTA IV, TLAD and TBoGT enumerate those sprite IDs as taxi destinations. Objective
         // variants 4 and 5 are used only during taxi entry/rides because those scripts omit them.
-        blip.Icon = (category, taxiSafe) switch
+        BlipIcon icon = (category, taxiSafe) switch
         {
             (CollectibleCategory.Bird, false) => BlipIcon.Misc_Destination1,
             (CollectibleCategory.StuntJump, false) => BlipIcon.Misc_Destination2,
@@ -580,6 +583,7 @@ public sealed class RadarMarkerRenderer(ILog log) : IMarkerRenderer
             (CollectibleCategory.StuntJump, true) => BlipIcon.Misc_Objective5,
             _ => taxiSafe ? BlipIcon.Misc_Objective4 : BlipIcon.Misc_Destination1,
         };
+        blip.Icon = icon;
     }
 
     /// <summary>A live blip and the state last pushed to it.</summary>

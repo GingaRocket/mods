@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using GtaCollectiblesMap.Core.Model;
 using GTA;
 
@@ -17,9 +15,6 @@ internal static class CompleteEditionBlipInterop
     // ScriptHookDotNet's BlipDisplay labels do not match GTA IV's observed values.
     private const int MapAndRadarDisplay = 2;
     private const int MapOnlyDisplay = 3;
-
-    private static readonly object NameLock = new();
-    private static readonly Dictionary<string, IntPtr> PersistentNames = [];
 
     public static void SetAlpha(Blip blip, byte alpha)
     {
@@ -49,18 +44,11 @@ internal static class CompleteEditionBlipInterop
 
     public static void SetName(Blip blip, string name)
     {
-        IntPtr namePointer;
-        lock (NameLock)
-        {
-            if (!PersistentNames.TryGetValue(name, out namePointer))
-            {
-                namePointer = Marshal.StringToHGlobalAnsi(name);
-                PersistentNames.Add(name, namePointer);
-            }
-        }
-
-        // Interned ANSI pointer: Blip.Name allocates a temp string and frees it; on CE that
-        // pointer is still used for hover. Do not also assign Blip.Name (double native).
-        GTA.Native.Function.Call("CHANGE_BLIP_NAME_FROM_ASCII", blip, namePointer.ToInt32());
+        // ScriptHookDotNet frees the temporary ANSI string used by CHANGE_BLIP_NAME_FROM_ASCII
+        // immediately after the native call, but Complete Edition keeps that pointer for the hover
+        // tooltip on the pause map. Any custom name assignment eventually crashes when the map is
+        // opened. Leaving the name unset lets the game fall back to the default icon tooltip.
+        _ = blip;
+        _ = name;
     }
 }
