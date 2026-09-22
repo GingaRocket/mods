@@ -76,20 +76,6 @@ public sealed class CollectibleTracker(
             }
         }
 
-        if (source.Category == CollectibleCategory.StuntJump && collected > 0)
-        {
-            List<Vec3> collectedPositions = [];
-            foreach (Collectible collectible in collectibles)
-            {
-                if (collectible.IsCollected)
-                {
-                    collectedPositions.Add(collectible.Position);
-                }
-            }
-
-            renderer.SweepNamelessOrphans(source.Category, collectedPositions);
-        }
-
         Status = new TrackerStatus(TrackerState.Ok, null, remaining, collectibles.Count);
     }
 

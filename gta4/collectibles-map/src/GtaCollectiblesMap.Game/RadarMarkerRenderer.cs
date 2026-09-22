@@ -207,13 +207,15 @@ public sealed class RadarMarkerRenderer(ILog log) : IMarkerRenderer
             }
 
             ApplyIcon(blip, key.Category, _taxiSafeIcons);
-            CompleteEditionBlipInterop.SetName(blip, state.Name);
             // The mod applies its configurable radius through Display, so disable the game's
             // separate fixed short-range filter.
             blip.ShowOnlyWhenNear = false;
             ApplyStyle(blip, state.Style, _taxiSafeIcons);
             // A blip is created fully opaque, so that is the alpha already in effect.
             ApplyAlpha(blip, applied: byte.MaxValue, wanted: state.Style.Alpha);
+            // Name last: Complete Edition drops the hover string after in-place sprite/style
+            // writes. Setting it before ApplyStyle left every new marker with an empty box.
+            CompleteEditionBlipInterop.SetName(blip, state.Label);
             _markers[key] = new Marker(blip, state);
         }
         catch (Exception ex)
@@ -278,9 +280,11 @@ public sealed class RadarMarkerRenderer(ILog log) : IMarkerRenderer
             // label, so the name is re-established last and unconditionally. The string is
             // already interned as a process-lifetime pointer, so this is one native call with
             // no allocation behind it.
-            if (mutated || !string.Equals(marker.State.Name, state.Name, StringComparison.Ordinal))
+            if (mutated
+                || !string.Equals(marker.State.Name, state.Name, StringComparison.Ordinal)
+                || !string.Equals(marker.State.Label, state.Label, StringComparison.Ordinal))
             {
-                CompleteEditionBlipInterop.SetName(marker.Blip, state.Name);
+                CompleteEditionBlipInterop.SetName(marker.Blip, state.Label);
             }
 
             // Recorded last: if a native above threw, the next refresh has to still see the
@@ -344,96 +348,11 @@ public sealed class RadarMarkerRenderer(ILog log) : IMarkerRenderer
         CollectibleCategory category,
         IReadOnlyList<Vec3> collectedPositions)
     {
-        if (category != CollectibleCategory.StuntJump || collectedPositions.Count == 0)
-        {
-            return;
-        }
-
-        const float radiusSquared = 10000f;
-
-        foreach (BlipType type in BlipTypes)
-        {
-            Blip[]? blips;
-            try
-            {
-                blips = Blip.GetAllBlipsOfType(type);
-            }
-            catch
-            {
-                continue;
-            }
-
-            if (blips is null)
-            {
-                continue;
-            }
-
-            foreach (Blip blip in blips)
-            {
-                try
-                {
-                    if (!blip.Exists())
-                    {
-                        continue;
-                    }
-
-                    if (Probe(() => blip.Icon.ToString()) != nameof(BlipIcon.Misc_Destination2))
-                    {
-                        continue;
-                    }
-
-                    Vec3 pos = blip.Position.ToVec3();
-                    if (IsTrackedAt(pos) || !IsNearCollected(pos, collectedPositions, radiusSquared))
-                    {
-                        continue;
-                    }
-
-                    CompleteEditionBlipInterop.SetDisplay(blip, MarkerDisplay.Hidden);
-                    CompleteEditionBlipInterop.RemoveBlip(blip);
-                    try
-                    {
-                        blip.Delete();
-                    }
-                    catch
-                    {
-                        // Native REMOVE_BLIP already ran.
-                    }
-                }
-                catch
-                {
-                    // Best effort; a live taxi blip must not abort the rest of the sweep.
-                }
-            }
-        }
-    }
-
-    private bool IsTrackedAt(Vec3 position)
-    {
-        foreach (Marker marker in _markers.Values)
-        {
-            if (position.DistanceSquaredTo(marker.State.Position) <= OwnershipEpsilonSquared)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool IsNearCollected(
-        Vec3 position,
-        IReadOnlyList<Vec3> collectedPositions,
-        float radiusSquared)
-    {
-        foreach (Vec3 collected in collectedPositions)
-        {
-            if (position.DistanceSquaredTo(collected) <= radiusSquared)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        // Disabled: every heuristic tried (sprite, position, empty name) also hits live
+        // markers on Complete Edition because SHDN blip reads are unreliable. Leave
+        // leftover cleanup to the game's own blip pool and a fresh script start.
+        _ = category;
+        _ = collectedPositions;
     }
 
     public void RemoveAll()
@@ -485,7 +404,7 @@ public sealed class RadarMarkerRenderer(ILog log) : IMarkerRenderer
             {
                 ApplyIcon(marker.Blip, key.Category, enabled);
                 ApplyScale(marker.Blip, marker.State.Style.Scale, enabled);
-                CompleteEditionBlipInterop.SetName(marker.Blip, marker.State.Name);
+                CompleteEditionBlipInterop.SetName(marker.Blip, marker.State.Label);
             }
             catch (Exception ex)
             {

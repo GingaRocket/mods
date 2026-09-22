@@ -31,7 +31,8 @@ internal static class CompleteEditionBlipInterop
     {
         // ScriptHookDotNet's Hidden enum is not 0 on Complete Edition. Writing it leaves
         // the last value in place — MapOnly (3) — so the blip vanishes from radar and
-        // stays on the pause map.
+        // stays on the pause map. Do not substitute 1: that value is live on CE and
+        // wipes custom names / visibility of unrelated markers.
         int value = display switch
         {
             MarkerDisplay.MapOnly => MapOnlyDisplay,
@@ -58,10 +59,8 @@ internal static class CompleteEditionBlipInterop
             }
         }
 
-        // Do not call Blip.Name on Complete Edition. ScriptHookDotNet frees its temporary
-        // unmanaged string immediately after CHANGE_BLIP_NAME_FROM_ASCII returns. On the CE
-        // compatibility path, hovering later behaves as though that pointer was retained.
-        // These strings intentionally live until the game process exits.
+        // Interned ANSI pointer: Blip.Name allocates a temp string and frees it; on CE that
+        // pointer is still used for hover. Do not also assign Blip.Name (double native).
         GTA.Native.Function.Call("CHANGE_BLIP_NAME_FROM_ASCII", blip, namePointer.ToInt32());
     }
 }

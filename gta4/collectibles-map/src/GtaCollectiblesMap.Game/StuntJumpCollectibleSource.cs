@@ -519,7 +519,7 @@ public sealed class StuntJumpCollectibleSource(ILog log) : ICollectibleSource
                     return false;
                 }
 
-                byte[] record = new byte[PassedOffset + 1];
+                byte[] record = new byte[0x5C];
                 if (!ProcessMemory.TryRead(AddressFrom32(pointer), record)
                     || !TryDecodeJump(record, 0, slot, out DecodedJump jump))
                 {
@@ -573,6 +573,7 @@ public sealed class StuntJumpCollectibleSource(ILog log) : ICollectibleSource
             (min.X + max.X) * 0.5f,
             (min.Y + max.Y) * 0.5f,
             (min.Z + max.Z) * 0.5f);
+
         jump = new DecodedJump(
             min,
             max,

@@ -22,9 +22,8 @@ public interface IMarkerRenderer
     void RemoveAll();
 
     /// <summary>
-    /// Deletes leftover destination-2 blips at collected stunt-jump positions that this
-    /// renderer is not tracking (empty hover name). Complete Edition can keep those after
-    /// a failed delete.
+    /// Deletes leftover destination-2 blips on stunt-jump launch boxes that this renderer
+    /// is not tracking. The game plants nameless ones there; hovering those hides our label.
     /// </summary>
     void SweepNamelessOrphans(
         CollectibleCategory category,
